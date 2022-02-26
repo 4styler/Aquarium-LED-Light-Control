@@ -620,10 +620,10 @@ void loop(){
   }else if (today_seconds <= start_day){
       //Night bevor Morning
       Serial.println("Run Midnight.");
-      /*for(int a=0; a<led_split; a++){
-        colorday(a);
+      for(int a=0; a<led_split; a++){
+        //colorday(a);
         colornight(a);
-        fade_to = (start_night + fade_down) - today_seconds;
+        /*fade_to = (start_night + fade_down) - today_seconds;
         if (fade_to >= 0){
           reduce_red = map(fade_to, fade_down, 0, red_day, red_night);
           reduce_green = map(fade_to, fade_down, 0, green_day, green_night);
@@ -645,7 +645,7 @@ void loop(){
         }else{*/
           run_leds(a, red_night, blue_night, green_night);
           ledcWrite(ledChannel, white_Night);
-        //}
+        }
       //}
 
   }else{
@@ -680,11 +680,6 @@ void loop(){
       }
   }
 }
-
-/*#######################White########################
-    <td><center><input type="range" name="whiteDay" step="1" value="%pref_whiteDay%" min="0" max="100" oninput="this.nextElementSibling.value = this.value" required><output>%pref_whiteDay%</output></center></td>
-    <td><center><input type="range" name="whiteNight" step="1" value="%pref_whiteNight%" min="0" max="100" oninput="this.nextElementSibling.value = this.value" required><output>%pref_whiteNight%</output></center></td>
-#######################White########################*/
 
 void run_leds(int a, int power_red, int power_blue, int power_green){
           r = power_red;
