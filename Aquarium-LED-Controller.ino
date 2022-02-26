@@ -395,7 +395,7 @@ void setup(){
   // attach the channel to the GPIO to be controlled
   ledcAttachPin(ledPin, ledChannel);
   
-  rainbow(10);
+  rainbow(1);
 }
 
 void rainbow(int wait) {
@@ -587,7 +587,7 @@ void loop(){
           }
         }
     }else{
-      //TAG
+      //Day
       Serial.println("Run Day.");
       for(int a=0; a<led_split; a++){
         colorday(a);
@@ -617,8 +617,39 @@ void loop(){
         }
       }
     }
+  }else if (today_seconds <= start_day){
+      //Night bevor Morning
+      Serial.println("Run Midnight.");
+      /*for(int a=0; a<led_split; a++){
+        colorday(a);
+        colornight(a);
+        fade_to = (start_night + fade_down) - today_seconds;
+        if (fade_to >= 0){
+          reduce_red = map(fade_to, fade_down, 0, red_day, red_night);
+          reduce_green = map(fade_to, fade_down, 0, green_day, green_night);
+          reduce_blue = map(fade_to, fade_down, 0, blue_day, blue_night);
+          Serial.print("Fade_to: ");
+          Serial.println(fade_to);
+  
+          Serial.print("MAP: ");
+          Serial.print(reduce_red);
+          Serial.print(", ");
+          Serial.print(reduce_green);
+          Serial.print(", ");
+          Serial.println(reduce_blue);
+          run_leds(a, reduce_red, reduce_blue, reduce_green);
+          shift_white = map(fade_to, fade_down, 0, white_Day, white_Night);
+          Serial.print("White: ");
+          Serial.println(shift_white);
+          ledcWrite(ledChannel, shift_white);
+        }else{*/
+          run_leds(a, red_night, blue_night, green_night);
+          ledcWrite(ledChannel, white_Night);
+        //}
+      //}
+
   }else{
-      //NACHT
+      //Night
       Serial.println("Run Night.");
       for(int a=0; a<led_split; a++){
         colorday(a);
@@ -647,7 +678,6 @@ void loop(){
           ledcWrite(ledChannel, white_Night);
         }
       }
-
   }
 }
 
