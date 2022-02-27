@@ -35,7 +35,7 @@ Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 Preferences preferences;
 
 const int ledPin = 10;  // 10 corresponds to GPIO10
-const int freq = 5000;
+const int freq = 21000;
 const int ledChannel = 0;
 const int resolution = 8;
 
@@ -549,13 +549,13 @@ void loop(){
                 Serial.print(", ");
                 Serial.println(reduce_blue);
                 run_leds(a, reduce_red, reduce_blue, reduce_green);
-                shift_white = map(fade_to, fade_down, 0, white_Day, white_Night);
+                shift_white = map(fade_to, pause_fade, 0, white_Day, white_Night);
                 Serial.print("White: ");
                 Serial.println(shift_white);
                 ledcWrite(ledChannel, shift_white);
               }else{
                 run_leds(a, red_night, blue_night, green_night);
-                
+                ledcWrite(ledChannel, white_Night);
               }
           }
         }else{
@@ -579,7 +579,7 @@ void loop(){
                 Serial.print(", ");
                 Serial.println(reduce_blue);
                 run_leds(a, reduce_red, reduce_blue, reduce_green);
-                shift_white = map(fade_to, fade_down, 0, white_Night, white_Day);
+                shift_white = map(fade_to, pause_fade, 0, white_Night, white_Day);
                 Serial.print("White: ");
                 Serial.println(shift_white);
                 ledcWrite(ledChannel, shift_white);
