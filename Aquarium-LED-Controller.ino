@@ -35,7 +35,7 @@ Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 Preferences preferences;
 
 const int ledPin = 10;  // 10 corresponds to GPIO10
-const int freq = 21000;
+const int freq = 200;
 const int ledChannel = 0;
 const int resolution = 8;
 
