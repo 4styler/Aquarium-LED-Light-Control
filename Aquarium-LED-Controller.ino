@@ -9,6 +9,7 @@
 //Insert in HTML Code: https://techtutorialsx.com/2018/07/23/esp32-arduino-http-server-template-processing-with-multiple-placeholders/
 //Perferences: https://randomnerdtutorials.com/esp32-save-data-permanently-preferences/
 //ESP32Time: https://github.com/fbiego/ESP32Time
+//Cheating LevelShifter LED: https://hackaday.com/2017/01/20/cheating-at-5v-ws2812-control-to-use-a-3-3v-data-line/
 
 #include <Arduino.h>
 #include <AsyncTCP.h>
@@ -26,18 +27,24 @@
 #include <ESP32Time.h>
 ESP32Time rtc;
 
+
+#include <FastLED.h>
+
 #include <Adafruit_NeoPixel.h>
 #define PIN 22
-#define NUMPIXELS 60
-Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+#define NUMPIXELS 265 // with level shifter led
+CRGB leds[NUMPIXELS];
+////Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #include <Preferences.h>
 Preferences preferences;
 
 const int ledPin = 10;  // 10 corresponds to GPIO10
-const int freq = 200;
+const int freq = 600;
 const int ledChannel = 0;
 const int resolution = 8;
+
+const int co2pin = 12;
 
 #define ESP_WPS_MODE      WPS_TYPE_PBC
 #define ESP_MANUFACTURER  "ESPRESSIF"
@@ -187,6 +194,20 @@ Pause From must be less than Pause To. Break must be within the day. Errors are 
   <tr>
     <td><center><input type="time" name="fadeUp" value="%pref_fadeUp%"></center></td>
     <td><center><input type="time" name="fadeDown" value="%pref_fadeDown%"></center></td>
+  </tr>
+</table>
+</br>
+
+<b>CO2 settings:</b></br>
+</br>
+<table>
+  <tr>
+    <th>On:</th>
+    <th>Off:</th>
+  </tr>
+  <tr>
+    <td><center><input type="time" name="co2on" value="%pref_co2on%"></center></td>
+    <td><center><input type="time" name="co2off" value="%pref_co2off%"></center></td>
   </tr>
 </table>
 </br>
@@ -385,20 +406,50 @@ void setup(){
   setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
   //configTime("CET-1CEST,M3.5.0,M10.5.0/3", ntpServer);  // Zeitzone einstellen https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv
 
-  pixels.begin();
-  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+    // FastLED.addLeds<NEOPIXEL, PIN>(leds, NUMPIXELS);  // GRB ordering is assumed
+    // FastLED.addLeds<SM16703, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<TM1829, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<TM1812, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<TM1809, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<TM1804, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<TM1803, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<UCS1903, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<UCS1903B, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<UCS1904, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<UCS2903, PIN, RGB>(leds, NUMPIXELS);
+    FastLED.addLeds<WS2812, PIN, GRB>(leds, NUMPIXELS);  // GRB ordering is typical
+    // FastLED.addLeds<WS2852, PIN, RGB>(leds, NUMPIXELS);  // GRB ordering is typical
+    // FastLED.addLeds<WS2812B, PIN, RGB>(leds, NUMPIXELS);  // GRB ordering is typical
+    // FastLED.addLeds<GS1903, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<SK6812, PIN, RGB>(leds, NUMPIXELS);  // GRB ordering is typical
+    // FastLED.addLeds<SK6822, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<APA106, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<PL9823, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<SK6822, PIN, RGB>(leds, NUMPIXELS);
+    //FastLED.addLeds<WS2811, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<WS2813, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<APA104, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<WS2811_400, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<GE8822, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<GW6205, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<GW6205_400, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<LPD1886, PIN, RGB>(leds, NUMPIXELS);
+    // FastLED.addLeds<LPD1886_8BIT, PIN, RGB>(leds, NUMPIXELS);
+  ////pixels.begin();
+  //strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  //strip.show();            // Turn OFF all pixels ASAP
+  //strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
 
   // configure LED PWM functionalitites
   ledcSetup(ledChannel, freq, resolution);
   // attach the channel to the GPIO to be controlled
   ledcAttachPin(ledPin, ledChannel);
+  pinMode(co2pin, OUTPUT);
   
-  rainbow(1);
+  //rainbow(1);
 }
 
-void rainbow(int wait) {
+/*void rainbow(int wait) {
   // Hue of first pixel runs 5 complete loops through the color wheel.
   // Color wheel has a range of 65536 but it's OK if we roll over, so
   // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
@@ -415,7 +466,7 @@ void rainbow(int wait) {
     strip.show(); // Update strip with new contents
     delay(wait);  // Pause for a moment
   }
-}
+}*/
 
 void printTime(){  
   struct tm time;
@@ -467,6 +518,8 @@ long pause_from;
 long pause_to;
 long fade_up;
 long fade_down;
+long co2_on;
+long co2_off;
 String led_split_string;
 
 void loop(){
@@ -524,6 +577,18 @@ void loop(){
     shift = map(shift.toInt(), 0, 100, 0, 255);
     white_Night = shift.toInt();
 
+  }
+  if (preferences.isKey("pref_co2on")){
+    shift = preferences.getString("pref_co2on");
+    hours = shift.substring(0,2);
+    minutes = shift.substring(3,5);
+    co2_on = (hours.toInt() * 3600) + (minutes.toInt() * 60);
+  }
+  if (preferences.isKey("pref_co2off")){
+    shift = preferences.getString("pref_co2off");
+    hours = shift.substring(0,2);
+    minutes = shift.substring(3,5);
+    co2_off = (hours.toInt() * 3600) + (minutes.toInt() * 60);
   }
 
   if (today_seconds >= start_day and today_seconds <= start_night){
@@ -594,9 +659,9 @@ void loop(){
         colornight(a);
         fade_to = (start_day + fade_up) - today_seconds;
         if (fade_to >= 0){
-          reduce_red = map(fade_to, fade_down, 0, red_night, red_day);
-          reduce_green = map(fade_to, fade_down, 0, green_night, green_day);
-          reduce_blue = map(fade_to, fade_down, 0, blue_night, blue_day);
+          reduce_red = map(fade_to, fade_up, 0, red_night, red_day);
+          reduce_green = map(fade_to, fade_up, 0, green_night, green_day);
+          reduce_blue = map(fade_to, fade_up, 0, blue_night, blue_day);
           Serial.print("Fade_to: ");
           Serial.println(fade_to);
 
@@ -679,6 +744,13 @@ void loop(){
         }
       }
   }
+  if (today_seconds >= co2_on and today_seconds <= co2_off){
+    //switch co2 on
+    digitalWrite(co2pin, HIGH);  
+  }else{
+    //switch co2 off
+    digitalWrite(co2pin, LOW); 
+  }
 }
 
 void run_leds(int a, int power_red, int power_blue, int power_green){
@@ -687,10 +759,13 @@ void run_leds(int a, int power_red, int power_blue, int power_green){
           b = power_blue;
           
           int NUMPIXELS1 = NUMPIXELS + led_split;
-          for(int i=a; i<=NUMPIXELS1; i += led_split) {
-            pixels.setPixelColor(i, r, g, b);
-            pixels.show();
+          for(int i=a; i<=NUMPIXELS; i += led_split) {
+            //pixels.setPixelColor(i, r, g, b);
+            leds[i] = CRGB(r,g,b);
+            //leds[i] = setRGB(r,g,b);
           }
+          FastLED.show();
+          //pixels.show();
         
 }
 void colorday(int a){
